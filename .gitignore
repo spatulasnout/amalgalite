@@ -7,6 +7,10 @@ lib/amalgalite/1.9
 ext/amalgalite/Makefile
 ext/amalgalite/rbconfig.rb
 ext/amalgalite/*.def
+ext/amalgalite/*.exp
+ext/amalgalite/*.lib
+ext/amalgalite/*.obj
+ext/amalgalite/*.pdb
 examples/*.db
 tmp/*
 *~
