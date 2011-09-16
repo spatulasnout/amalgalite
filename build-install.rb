@@ -27,6 +27,10 @@ RB_SITELIBDIR = File.join(RB_INSTALL_DIR, $1)
 (RbConfig::CONFIG['sitearchdir'] =~ %r{\A.*(/lib/ruby/site_ruby/.*)\z}) or abort("can't parse sitelibdir")
 RB_SITEARCHDIR = File.join(RB_INSTALL_DIR, $1)
 
+MAKE_EXE = (RUBY_PLATFORM =~ /mswin/) ? "nmake" : "make"
+
+DLEXT = RbConfig::CONFIG['DLEXT']
+
 ##############################################################################
 
 def log_info(msg)
@@ -57,11 +61,11 @@ end
 Dir.chdir("./ext/amalgalite")
 
 sys(RB_EXE, "extconf.rb")
-sys("nmake")
+sys(MAKE_EXE)
 
 destdir = File.join(RB_SITEARCHDIR, "amalgalite/1.9")
 FileUtils.mkdir_p(destdir)
-cp("amalgalite3.so", destdir)
+cp("amalgalite3.#{DLEXT}", destdir)
 
 Dir.chdir("../..")
 
