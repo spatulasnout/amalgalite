@@ -105,7 +105,7 @@ module Amalgalite
         s = $!
         begin 
           reset_for_next_execute!
-        rescue => e
+        rescue # => e
         end
         raise s if s != s_before
       end
