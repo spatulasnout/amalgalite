@@ -1,6 +1,8 @@
 require 'mkmf'
 require 'rbconfig'
 
+enable_icu = ARGV.delete "--enable-icu"
+
 # used by the ext:build_win-1.x.x tasks, really no one else but jeremy should be
 # using this hack
 $ruby = ARGV.shift if ARGV[0]
@@ -11,7 +13,12 @@ $CFLAGS += " -DSQLITE_ENABLE_RTREE=1"
 $CFLAGS += " -DSQLITE_ENABLE_FTS3=1"
 $CFLAGS += " -DSQLITE_ENABLE_FTS3_PARENTHESIS=1"
 $CFLAGS += " -DSQLITE_ENABLE_STAT2=1"
-
+if enable_icu
+  $CFLAGS += " -DSQLITE_ENABLE_ICU=1"
+  have_library("icuuc")
+  have_library("icuin")
+end
+  
 # we compile sqlite the same way that the installation of ruby is compiled.
 if RbConfig::MAKEFILE_CONFIG['configure_args'].include?( "--enable-pthread" ) then
   $CFLAGS += " -DSQLITE_THREADSAFE=1"
