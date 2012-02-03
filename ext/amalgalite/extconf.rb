@@ -7,6 +7,10 @@ enable_icu = ARGV.delete "--enable-icu"
 # using this hack
 $ruby = ARGV.shift if ARGV[0]
 
+def die(msg="Fail.")
+  abort msg
+end
+
 # make available table and column meta data api
 $CFLAGS += " -DSQLITE_ENABLE_COLUMN_METADATA=1"  
 $CFLAGS += " -DSQLITE_ENABLE_RTREE=1"
@@ -15,8 +19,14 @@ $CFLAGS += " -DSQLITE_ENABLE_FTS3_PARENTHESIS=1"
 $CFLAGS += " -DSQLITE_ENABLE_STAT2=1"
 if enable_icu
   $CFLAGS += " -DSQLITE_ENABLE_ICU=1"
-  have_library("icuuc")
-  have_library("icuin")
+  if RUBY_PLATFORM =~ /mswin/
+    have_library("icuuc")
+    have_library("icuin")
+  else
+    have_library("icudata.48") or die
+    have_library("icuuc.48") or die
+    have_library("icui18n.48") or die
+  end
 end
   
 # we compile sqlite the same way that the installation of ruby is compiled.
