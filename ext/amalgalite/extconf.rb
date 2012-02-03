@@ -20,8 +20,9 @@ $CFLAGS += " -DSQLITE_ENABLE_STAT2=1"
 if enable_icu
   $CFLAGS += " -DSQLITE_ENABLE_ICU=1"
   if RUBY_PLATFORM =~ /mswin/
-    have_library("icuuc")
-    have_library("icuin")
+    have_library("icudt") or die
+    have_library("icuuc") or die
+    have_library("icuin") or die
   else
     have_library("icudata.48") or die
     have_library("icuuc.48") or die
