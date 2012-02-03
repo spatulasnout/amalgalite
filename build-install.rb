@@ -60,7 +60,7 @@ end
 
 Dir.chdir("./ext/amalgalite")
 
-sys(RB_EXE, "extconf.rb")
+sys(RB_EXE, "extconf.rb", "--enable-icu")
 sys(MAKE_EXE)
 
 destdir = File.join(RB_SITEARCHDIR, "amalgalite/1.9")
