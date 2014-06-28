@@ -1,6 +1,6 @@
-require File.expand_path( File.join( File.dirname(__FILE__), 'spec_helper'))
+require 'spec_helper'
 
-$: << File.expand_path(File.join(File.dirname(__FILE__),"..","lib"))
+require 'thread'
 require 'amalgalite'
 require 'amalgalite/taps/io'
 require 'amalgalite/taps/console'
@@ -222,7 +222,7 @@ describe Amalgalite::Database do
         db.in_transaction?.should eql(true)
         raise "testing rollback"
       end
-    rescue => e
+    rescue
       @iso_db.in_transaction?.should eql(false)
       @iso_db.execute("SELECT count(1) as cnt FROM country").first['cnt'].should eql(242)
     end
@@ -260,23 +260,23 @@ describe Amalgalite::Database do
 
   describe "#define_function" do
    it "does not allow mixing of arbitrary and mandatory arguments to an SQL function" do
-      class FunctionTest2 < ::Amalgalite::Function
+      class DBFunctionTest2 < ::Amalgalite::Function
         def initialize
           super( 'ftest2', -2 )
         end
         def call( a, *args ); end
       end
-      lambda { @iso_db.define_function("ftest2", FunctionTest2.new ) }.should raise_error( ::Amalgalite::Database::FunctionError )
+      lambda { @iso_db.define_function("ftest2", DBFunctionTest2.new ) }.should raise_error( ::Amalgalite::Database::FunctionError )
     end
 
     it "does not allow outrageous arity" do
-      class FunctionTest3 < ::Amalgalite::Function
+      class DBFunctionTest3 < ::Amalgalite::Function
         def initialize
           super( 'ftest3', 128 )
         end
         def call( *args) ; end
       end
-      lambda { @iso_db.define_function("ftest3", FunctionTest3.new ) }.should raise_error( ::Amalgalite::SQLite3::Error )
+      lambda { @iso_db.define_function("ftest3", DBFunctionTest3.new ) }.should raise_error( ::Amalgalite::SQLite3::Error )
     end
 
  end
@@ -364,7 +364,7 @@ describe Amalgalite::Database do
     end
 
     rudeness = Thread.new( @iso_db ) do |db|
-      sent = control_queue.deq
+      control_queue.deq
       count = 0
       loop do
         @iso_db.interrupt!
@@ -410,13 +410,12 @@ describe Amalgalite::Database do
   end
 
   it "rolls back a savepoint" do
-    all_sub = @iso_db.execute("SELECT count(*) as cnt from subcountry").first['cnt']
     us_sub  = @iso_db.execute("SELECT count(*) as cnt from subcountry where country = 'US'").first['cnt']
     lambda {
       @iso_db.savepoint( "t1" ) do |s|
         s.execute("DELETE FROM subcountry where country = 'US'")
         as = @iso_db.execute("SELECT count(*) as cnt from subcountry where country = 'US'").first['cnt']
-        as.should == 0
+        as.should be == 0
         raise "sample error"
       end
     }.should raise_error( StandardError, /sample error/ )
@@ -494,12 +493,18 @@ describe Amalgalite::Database do
     @iso_db.replicate_to( fdb )
     @iso_db.close
 
-    File.exist?( SpecInfo.test_db ).should == true
+    File.exist?( SpecInfo.test_db ).should be == true
     fdb.execute("SELECT count(*) as cnt from subcountry").first['cnt'].should == all_sub
   end
 
   it "raises an error if it is given an invalid location to replicate to" do
     lambda { @iso_db.replicate_to( false ) }.should raise_error( ArgumentError, /must be a String or a Database/ )
+  end
+
+  it "imports batch statements" do
+    db = Amalgalite::Database.new(":memory:")
+    db.import("CREATE TABLE things(stuff TEXT); INSERT INTO things (stuff) VALUES (\"foobar\");").should be_true
+    db.first_value_from("SELECT stuff FROM things").should == "foobar"
   end
 
 end

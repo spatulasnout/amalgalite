@@ -105,7 +105,7 @@ module Amalgalite
     # The SQL to create the table for storing ruby code
     #
     def create_table_sql
-      sql = <<-create
+      <<-create
       CREATE TABLE #{options[:table_name]} (
       id                   INTEGER PRIMARY KEY AUTOINCREMENT,
       #{options[:filename_column]}   TEXT UNIQUE,
@@ -211,7 +211,10 @@ module Amalgalite
           STDERR.puts "Unable to add #{f} to the manifest, cannot find the file on disk"
           next
         end
-        m.require_path = m.require_path.to_s[ /\A(.*)\.rb\Z/, 1]
+        # Make sure that we can handle files without the .rb extension
+        # if we have to. This means bin/foo works as a require path
+        # without requiring bin/foo to actually be bin/foo.rb
+        m.require_path = m.require_path.to_s.sub(/\.rb\Z/,'')
         manifest << m
       end
       return manifest

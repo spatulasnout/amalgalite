@@ -1,9 +1,4 @@
-require 'rubygems'
 require 'rspec'
-
-$:.unshift File.expand_path(File.join(File.dirname(__FILE__),"..","lib"))
-require 'amalgalite/paths'
-$:.unshift Amalgalite::Paths.root_dir
 
 require 'amalgalite'
 require Amalgalite::Paths.spec_path( "iso_3166_database.rb" )
@@ -19,7 +14,7 @@ class SpecInfo
     end
 
     def make_clone_iso_db
-      new_path = make_master_iso_db.duplicate( 'testing' )
+      make_master_iso_db.duplicate( 'testing' )
     end
   end
 end
@@ -36,7 +31,7 @@ RSpec.configure do |config|
   config.before( :each ) do
     @iso_db_path = SpecInfo.make_clone_iso_db
     @iso_db      = Amalgalite::Database.new( @iso_db_path )
-    @schema     = IO.read( Amalgalite::Iso3166Database.schema_file )
+    @schema      = IO.read( Amalgalite::Iso3166Database.schema_file )
   end
 
   config.after( :each ) do

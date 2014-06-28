@@ -1,0 +1,54 @@
+require 'mkmf'
+require 'rbconfig'
+
+enable_icu = ARGV.delete "--enable-icu"
+
+# used by the ext:build_win-1.x.x tasks, really no one else but jeremy should be
+# using this hack
+$ruby = ARGV.shift if ARGV[0]
+
+def die(msg="Fail.")
+  abort msg
+end
+
+# make available table and column meta data api
+$CFLAGS += " -DSQLITE_ENABLE_COLUMN_METADATA=1"  
+$CFLAGS += " -DSQLITE_ENABLE_RTREE=1"
+$CFLAGS += " -DSQLITE_ENABLE_FTS3=1"
+$CFLAGS += " -DSQLITE_ENABLE_FTS3_PARENTHESIS=1"
+$CFLAGS += " -DSQLITE_ENABLE_STAT2=1"
+if enable_icu
+  $CFLAGS += " -DSQLITE_ENABLE_ICU=1"
+  if RUBY_PLATFORM =~ /mswin/
+    have_library("icudt") or die
+    have_library("icuuc") or die
+    have_library("icuin") or die
+  else
+    have_library("icudata.48") or die
+    have_library("icuuc.48") or die
+    have_library("icui18n.48") or die
+  end
+end
+  
+# we compile sqlite the same way that the installation of ruby is compiled.
+if RbConfig::MAKEFILE_CONFIG['configure_args'].include?( "--enable-pthread" ) then
+  $CFLAGS += " -DSQLITE_THREADSAFE=1"
+else
+  $CFLAGS += " -DSQLITE_THREADSAFE=0"
+end
+
+# remove the -g flags  if it exists
+%w[ -ggdb\\d* -g\\d* ].each do |debug|
+  $CFLAGS = $CFLAGS.gsub(/#{debug}/,'')
+  RbConfig::MAKEFILE_CONFIG['debugflags'] = RbConfig::MAKEFILE_CONFIG['debugflags'].gsub(/#{debug}/,'')   if RbConfig::MAKEFILE_CONFIG['debugflags']
+end
+
+%w[ shorten-64-to-32 write-strings ].each do |warning|
+  $CFLAGS = $CFLAGS.gsub(/-W#{warning}/,'')
+  RbConfig::MAKEFILE_CONFIG['warnflags'] = RbConfig::MAKEFILE_CONFIG['warnflags'].gsub(/-W#{warning}/,'') if RbConfig::MAKEFILE_CONFIG['warnflags'] 
+end
+
+
+
+subdir = RUBY_VERSION.sub(/\.\d$/,'')
+create_makefile("amalgalite/#{subdir}/amalgalite")

@@ -326,6 +326,14 @@ module Amalgalite
       return count
     end
 
+    ## 
+    # Execute a batch of statements via sqlite3_exec. This does the same as
+    # execute_batch, but doesn't update the statement statistics.
+    #
+    def import(sql)
+      @api.execute_batch(sql)
+    end
+
     ##
     # clear all the current taps
     #
@@ -486,11 +494,11 @@ module Amalgalite
     ##
     # :call-seq:
     #   db.schema( dbname = "main" ) -> Schema
-    # 
-    # Returns a Schema object  containing the table and column structure of the
+    #
+    # Returns a Schema object containing the table and column structure of the
     # database.
     #
-    def schema( dbname = "main" ) 
+    def schema( dbname = "main" )
       @schema ||= ::Amalgalite::Schema.new( self, dbname )
       if @schema and @schema.dirty?
         reload_schema!( dbname )
@@ -512,7 +520,7 @@ module Amalgalite
 
     ##
     # Run a pragma command against the database
-    # 
+    #
     # Returns the result set of the pragma
     def pragma( cmd, &block )
       execute("PRAGMA #{cmd}", &block)
@@ -742,7 +750,7 @@ module Amalgalite
       end
 
       to_remove.each do |db_func|
-        @api.remove_function( db_func.name, db_func) 
+        @api.remove_function( db_func.name, db_func)
         @functions.delete( db_func.signature )
       end
     end
@@ -804,7 +812,7 @@ module Amalgalite
 
       to_remove.each do |db_agg|
         i = db_agg.new
-        @api.remove_aggregate( i.name, i.arity, db_agg )
+        @api.remove_aggregate( i.name, i.arity, db_agg)
         @aggregates.delete( i.signature )
       end
     end

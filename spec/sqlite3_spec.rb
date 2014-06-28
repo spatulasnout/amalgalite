@@ -1,10 +1,10 @@
-require File.expand_path(File.join(File.dirname(__FILE__),"spec_helper.rb"))
+require 'spec_helper'
 require 'amalgalite/sqlite3'
 require 'rbconfig'
 
 describe "Amalgalite::SQLite3" do
-  it "is threadsafe is ruby is compiled with pthread support, in this case that is (#{Config::CONFIG['configure_args'].include?( "--enable-pthread" )})" do
-    Amalgalite::SQLite3.threadsafe?.should eql(Config::CONFIG['configure_args'].include?( "--enable-pthread" ))
+  it "is threadsafe is ruby is compiled with pthread support, in this case that is (#{RbConfig::CONFIG['configure_args'].include?( "--enable-pthread" )})" do
+    Amalgalite::SQLite3.threadsafe?.should eql(RbConfig::CONFIG['configure_args'].include?( "--enable-pthread" ))
   end
 
   it "knows if an SQL statement is complete" do

@@ -1,4 +1,4 @@
-require File.expand_path( File.join( File.dirname( __FILE__ ), "spec_helper.rb" ) )
+require 'spec_helper'
 
 class PH < ::Amalgalite::ProgressHandler
   attr_reader :call_count
@@ -16,12 +16,11 @@ class PH < ::Amalgalite::ProgressHandler
   end
 end
 
-def query_thread( db )
-  Thread.new( db ) do |db|
+def query_thread( database )
+  Thread.new( database ) do |db|
     begin
       db.execute("select count(id) from country")
     rescue => e
-      had_error = e
       Thread.current[:exception] = e
     end
   end
@@ -69,7 +68,7 @@ describe "Progress Handlers" do
     qt.join
     ph.call_count.should eql(25)
     qt[:exception].should be_instance_of( ::Amalgalite::SQLite3::Error )
-    @iso_db.api.last_error_code.should == 9
+    @iso_db.api.last_error_code.should be == 9
     @iso_db.api.last_error_message.should  =~ /interrupted/
     qt[:exception].message.should =~ /interrupted/
   end

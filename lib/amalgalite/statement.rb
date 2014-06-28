@@ -103,9 +103,10 @@ module Amalgalite
         end
       ensure
         s = $!
-        begin 
+        begin
           reset_for_next_execute!
-        rescue # => e
+        rescue
+          # rescuing nothing on purpose
         end
         raise s if s != s_before
       end
@@ -343,9 +344,10 @@ module Amalgalite
           column_meta.schema = ::Amalgalite::Column.new( db_name, tbl_name, col_name, idx )
           column_meta.schema.declared_data_type = @stmt_api.column_declared_type( idx )
 
-          # only check for rowid if we have a table name and it is not the
-          # sqlite_master table.  We could get recursion in those cases.
-          if not using_rowid_column? and tbl_name and tbl_name != 'sqlite_master' and is_column_rowid?( tbl_name, col_name ) then
+          # only check for rowid if we have a table name and it is not one of the
+          # sqlite_master tables.  We could get recursion in those cases.
+          if not using_rowid_column? and tbl_name and
+             not %w[ sqlite_master sqlite_temp_master].include?( tbl_name ) and is_column_rowid?( tbl_name, col_name ) then
             @rowid_index = idx
           end
 
