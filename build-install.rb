@@ -4,6 +4,11 @@
 # amalgalite's ./ext structure is non-standard and doesn't
 # work with the usual setup.rb.
 #
+# Note that LIB or LIBRARY_PATH must be set in the environment to include
+# the ICU libs.  The build_am_deps script sets those automatically:
+#
+# $ ruby19 archive/script/build_am_deps.rb --clean amalgalite_ruby_ext
+#
 
 require 'rbconfig'
 require 'shellwords'
@@ -58,7 +63,7 @@ end
 
 ##############################################################################
 
-Dir.chdir("./ext/amalgalite")
+Dir.chdir("./ext/amalgalite/c")
 
 sys(RB_EXE, "extconf.rb", "--enable-icu")
 sys(MAKE_EXE, "clean")
@@ -66,9 +71,9 @@ sys(MAKE_EXE)
 
 destdir = File.join(RB_SITEARCHDIR, "amalgalite/1.9")
 FileUtils.mkdir_p(destdir)
-cp("amalgalite3.#{DLEXT}", destdir)
+cp("amalgalite.#{DLEXT}", destdir)
 
-Dir.chdir("../..")
+Dir.chdir("../../..")
 
 destdir = RB_SITELIBDIR
 cp_r(["lib/amalgalite.rb", "lib/amalgalite"], destdir)
